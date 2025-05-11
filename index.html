@@ -19,10 +19,18 @@
 
         <main class="app-main">
             <section id="input-section" class="card">
-                <h2 class="card-title">Enter Your Courses</h2>
+                <div class="card-header-controls"> <!-- Flex container for title and clear button -->
+                    <h2 class="card-title">Enter Your Courses</h2>
+                    <button id="clear-all-button" class="button button-danger button-small">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="16" height="16" style="margin-right: 6px;">
+                            <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75H4.5a.75.75 0 0 0 0 1.5h11a.75.75 0 0 0 0-1.5H14A2.75 2.75 0 0 0 11.25 1H8.75ZM10 4.75A.75.75 0 0 1 10.75 5.5v7.5a.75.75 0 0 1-1.5 0v-7.5A.75.75 0 0 1 10 4.75ZM12.5 5a.75.75 0 0 0-.75.75v7.5a.75.75 0 0 0 1.5 0v-7.5a.75.75 0 0 0-.75-.75ZM7.5 5A.75.75 0 0 0 6.75 5.75v7.5a.75.75 0 0 0 1.5 0v-7.5A.75.75 0 0 0 7.5 5Z" clip-rule="evenodd" />
+                        </svg>
+                        Clear All
+                    </button>
+                </div>
                 <div id="course-input-grid-wrapper">
                     <div id="course-input-grid">
-                        <!-- Input fields will be generated here by JavaScript -->
+                        <!-- Input fields and color pickers will be generated here -->
                     </div>
                 </div>
                 <button id="generate-button" class="button button-primary">
@@ -35,7 +43,7 @@
 
             <section id="output-section" style="display:none;">
                 <div id="schedule-controls" class="card">
-                    <h2 class="card-title">Schedule Options</h2>
+                     <h2 class="card-title">Schedule Options</h2>
                     <div class="controls-flex">
                         <div class="control-group">
                             <label for="template-select">Theme:</label>
@@ -58,7 +66,7 @@
                     </div>
                 </div>
 
-                <div id="class-schedule-container" class="card schedule-table-wrapper"> <!-- Added wrapper for potential advanced styling -->
+                <div id="class-schedule-container" class="card schedule-table-wrapper">
                     <h2 class="card-title">Your Class Schedule</h2>
                     <div class="table-responsive">
                         <table id="class-schedule-table" class="schedule-table theme-default">
