@@ -478,6 +478,35 @@ body {
   background-color: #40445a;
 }
 
+.theme-dark th { 
+    background-color: #343a40; /* Darker header background */
+    color: #e0e0e0; /* Light gray for header text */
+    border-bottom: 2px solid var(--color-primary); /* Keep primary accent, or change to a lighter one */
+    /* border-bottom-color: #52575c; */ /* Alternative darker border for header */
+}
+.theme-dark td.day-col { 
+    background-color: #343a40; /* Same as header for consistency */
+    color: #adb5bd;     /* Medium light gray for day names */
+    border-right-color: #495057; /* Darker border */
+}
+.theme-dark tbody tr td { /* TARGET ALL TDs in tbody for this theme */
+    background-color: #2c3034; /* Main dark cell background */
+    color: #f8f9fa;            /* <<< KEY CHANGE: Light text for cells */
+    border-bottom-color: #495057; /* Darker horizontal borders */
+}
+/* Ensure the right border for non-day-column cells also uses the dark theme's border color */
+.theme-dark tbody tr td:not(.day-col):not(:last-child) {
+    border-right-color: #495057;
+}
+.theme-dark tbody tr:hover td:not(.day-col) { 
+    background-color: #424852; /* Slightly lighter dark for hover */
+    color: #ffffff;            /* Ensure hover text is also light */
+}
+/* Ensure the last cell in a row doesn't have a right border if others do */
+.theme-dark tbody tr td:last-child {
+    border-right: none;
+}
+
 /* --- Sunset Theme (theme-peach) --- */
 .theme-peach thead th {
   background-color: #ff8c42;
