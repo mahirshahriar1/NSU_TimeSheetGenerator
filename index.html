@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Course Scheduler</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>Weekly Scheduler</h1>
+            <p class="subtitle">Plan your week with ease. Enter courses and generate your schedule.</p>
+        </header>
+
+        <main class="app-main">
+            <section id="input-section" class="card">
+                <h2 class="card-title">Enter Your Courses</h2>
+                <div id="course-input-grid-wrapper">
+                    <div id="course-input-grid">
+                        <!-- Input fields will be generated here by JavaScript -->
+                    </div>
+                </div>
+                <button id="generate-button" class="button button-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20" style="margin-right: 8px;">
+                        <path fill-rule="evenodd" d="M7.84 1.752a.75.75 0 0 1 .046.023c.29.149.544.33.755.538a.75.75 0 0 1 .135.098c.21.207.388.449.52.718.132.269.21.568.226.878A4.25 4.25 0 0 1 10 4a.75.75 0 0 1 0 1.5 2.75 2.75 0 0 0-2.75 2.75.75.75 0 0 1-1.5 0 4.25 4.25 0 0 1-.154-4.727.75.75 0 0 1 .01-.016c.111-.207.246-.4.398-.577a.75.75 0 0 1 .112-.082c.19-.153.392-.29.604-.406a.75.75 0 0 1 .07-.035Zm-.236 7.148a.75.75 0 0 1-.21-.036c-.212-.116-.414-.253-.604-.406a.75.75 0 0 1-.112-.082 3.969 3.969 0 0 1-.398-.577.75.75 0 0 1-.01-.016A4.25 4.25 0 0 1 6.5 2.5c.016-.31.094-.61.226-.878.132-.269.31-.51.52-.718a.75.75 0 0 1 .135-.098c.21-.208.464-.39.754-.538a.75.75 0 0 1 .047-.023h.001A.75.75 0 0 1 10 0a.75.75 0 0 1 .75.75V2a.75.75 0 0 1-.75.75h-.75A2.75 2.75 0 0 0 6.5 5.5V6A.75.75 0 0 1 5 6V5.25A2.75 2.75 0 0 0 2.25 2.5H1.5a.75.75 0 0 1-.75-.75V1A.75.75 0 0 1 1.5 0H2a.75.75 0 0 1 .152.013C2.542.077 2.914.227 3.25.443c.335.217.623.498.848.828.226.331.38.704.45 1.103A2.734 2.734 0 0 0 4.5 5.5v.75c0 .414.336.75.75.75h1.5a.75.75 0 0 0 .75-.75v-.75a2.75 2.75 0 0 0-.066-.627.75.75 0 0 1 .02-.047Zm2.396 5.35a.75.75 0 0 1 .75-.75h.75a2.75 2.75 0 0 0 2.75-2.75V14a.75.75 0 0 1-1.5 0v.75a2.75 2.75 0 0 0-2.75-2.75.75.75 0 0 1-.75-.75c0-1.519.154-3.072 1.046-4.227a.75.75 0 0 1 .01-.016c.111-.207.246-.4.398-.577a.75.75 0 0 1 .112-.082c.19-.153.392-.29.604-.406a.75.75 0 0 1 .07-.035h.002a.75.75 0 0 1 .64.012c.29.149.544.33.755.538a.75.75 0 0 1 .135.098c.21.207.388.449.52.718.132.269.21.568.226.878A4.25 4.25 0 0 1 12.5 16a.75.75 0 0 1 0-1.5 2.75 2.75 0 0 0 2.75-2.75.75.75 0 0 1 1.5 0 4.25 4.25 0 0 1-3.004 4.078.75.75 0 0 1-.01.016c-.111.207-.246.4-.398.577a.75.75 0 0 1-.112.082c-.19.153-.392.29-.604.406a.75.75 0 0 1-.07.035h-.001a.75.75 0 0 1-.64-.012c-.29-.149-.544-.33-.754-.538a.75.75 0 0 1-.135-.098c-.21-.208-.388-.45-.52-.718-.132-.269-.21-.569-.226-.878A4.25 4.25 0 0 1 10 11.75V11a.75.75 0 0 1 1.5 0v.75A2.75 2.75 0 0 0 14.25 14H15a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-.75.75h-.5a.75.75 0 0 1-.152-.013 4.226 4.226 0 0 1-1.298-.43c-.335-.217-.623-.498-.848-.828a4.234 4.234 0 0 1-.45-1.103A2.734 2.734 0 0 0 13.5 11V10.25a.75.75 0 0 0-1.5 0V11a2.75 2.75 0 0 0 .066.627.75.75 0 0 1-.02.047Z" clip-rule="evenodd" />
+                    </svg>
+                    Generate Schedule
+                </button>
+            </section>
+
+            <section id="output-section" style="display:none;">
+                <div id="schedule-controls" class="card">
+                    <h2 class="card-title">Schedule Options</h2>
+                    <div class="controls-flex">
+                        <div class="control-group">
+                            <label for="template-select">Theme:</label>
+                            <select id="template-select" class="select-input">
+                                <option value="theme-default">Default</option>
+                                <option value="theme-blue">Ocean Breeze</option>
+                                <option value="theme-green">Mint Fresh</option>
+                                <option value="theme-dark">Midnight</option>
+                                <option value="theme-peach">Sunset</option>
+                                <option value="theme-professional">Professional</option>
+                            </select>
+                        </div>
+                        <button id="save-image-button" class="button button-secondary">
+                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20" style="margin-right: 8px;">
+                                <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z" />
+                                <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
+                            </svg>
+                            Save as Image
+                        </button>
+                    </div>
+                </div>
+
+                <div id="class-schedule-container" class="card schedule-table-wrapper"> <!-- Added wrapper for potential advanced styling -->
+                    <h2 class="card-title">Your Class Schedule</h2>
+                    <div class="table-responsive">
+                        <table id="class-schedule-table" class="schedule-table theme-default">
+                            <!-- Class schedule table will be generated here -->
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="app-footer">
+            <p>© <span id="current-year"></span> Scheduler App. Crafted with care.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
