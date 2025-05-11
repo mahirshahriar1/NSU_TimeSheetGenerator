@@ -655,7 +655,7 @@ body {
   /* Wrapper for text input and color input */
   display: flex;
   align-items: center;
-  gap: var(--spacing-unit);
+  /* gap: var(--spacing-unit); */
 }
 .grid-cell-content input[type="text"] {
   flex-grow: 1; /* Text input takes most space */
@@ -706,4 +706,141 @@ body {
 .schedule-table td .course-name {
   flex-grow: 1;
   word-break: break-word; /* Allow long course names to wrap */
+}
+
+
+
+
+/* Global Course Management Section */
+#global-courses-section .global-course-form {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-unit);
+    margin-bottom: calc(var(--spacing-unit) * 2);
+    flex-wrap: wrap; /* Allow wrapping */
+}
+#global-courses-section .text-input { /* General text input style for reuse */
+    padding: calc(var(--spacing-unit) * 1.25);
+    border: 1px solid var(--color-border-medium);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.95rem;
+    font-family: var(--font-family-main);
+    flex-grow: 1; /* Take available space */
+    min-width: 150px; /* Prevent being too small */
+}
+#global-courses-section .text-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-focus);
+}
+#global-courses-section input[type="color"] { /* Style for the global color picker */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: calc(var(--spacing-unit) * 4); /* 32px */
+    height: calc(var(--spacing-unit) * 4);
+    padding: 0;
+    border: 1px solid var(--color-border-medium);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    background-color: transparent;
+}
+#global-courses-section input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+#global-courses-section input[type="color"]::-webkit-color-swatch { border: none; border-radius: calc(var(--border-radius-sm) - 1px); }
+#global-courses-section input[type="color"]::-moz-color-swatch { border: none; border-radius: calc(var(--border-radius-sm) - 1px); }
+
+
+#global-course-list-container {
+    margin-top: calc(var(--spacing-unit) * 2);
+}
+#global-course-list-container h3 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-unit);
+}
+#global-course-list-ul {
+    list-style: none;
+    padding: 0;
+    max-height: 200px; /* Scrollable if too many */
+    overflow-y: auto;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-unit);
+}
+#global-course-list-ul li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: calc(var(--spacing-unit) * 0.75) var(--spacing-unit);
+    border-bottom: 1px solid var(--color-border-light);
+    font-size: 0.95rem;
+}
+#global-course-list-ul li:last-child {
+    border-bottom: none;
+}
+.global-course-item-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-unit);
+}
+.global-course-item-color-swatch {
+    width: var(--spacing-unit) * 1.5;
+    height: var(--spacing-unit) * 1.5;
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.1);
+    flex-shrink: 0;
+}
+.remove-global-course-button {
+    background: none;
+    border: none;
+    color: var(--color-danger);
+    cursor: pointer;
+    padding: calc(var(--spacing-unit) * 0.5);
+    font-size: 1.1rem; /* Make X bigger */
+    line-height: 1;
+}
+.remove-global-course-button:hover {
+    color: #a71d2a; /* Darker danger */
+}
+
+
+/* Autocomplete Suggestions */
+.autocomplete-suggestions-container {
+    position: absolute; /* Positioned relative to the input's offsetParent */
+    border: 1px solid var(--color-border-medium);
+    border-top: none; /* Avoid double border with input */
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow-medium);
+    border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm); /* Rounded bottom corners */
+    z-index: 1000; /* Above other content */
+    max-height: 200px;
+    overflow-y: auto;
+    display: none; /* Hidden by default */
+}
+.autocomplete-suggestion-item {
+    padding: calc(var(--spacing-unit) * 1.25) calc(var(--spacing-unit) * 1.5);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-unit);
+    font-size: 0.95rem;
+}
+.autocomplete-suggestion-item:hover,
+.autocomplete-suggestion-item.active { /* For keyboard navigation */
+    background-color: var(--color-primary-light);
+    color: var(--color-primary-dark);
+}
+.autocomplete-suggestion-item .suggestion-color-swatch {
+    width: var(--spacing-unit) * 1.5;
+    height: var(--spacing-unit) * 1.5;
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.1);
+    flex-shrink: 0;
+}
+
+/* Ensure input grid wrapper allows absolute positioning of suggestions */
+#input-section .card-content-wrapper, /* If you have a wrapper around grid */
+#course-input-grid-wrapper {
+    position: relative; /* Needed for absolute positioning of suggestions */
 }
