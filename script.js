@@ -566,73 +566,107 @@ function renderScheduleTable(dataForTable) {
 
   // --- SAVE IMAGE BUTTON (Offscreen Clone Strategy - Simplified & Focused) ---
   saveImageButton.addEventListener("click", () => {
-    const scheduleOutputCard = document.getElementById(
-      "class-schedule-container"
-    );
-    const responsiveContainer =
-      scheduleOutputCard.querySelector(".table-responsive");
-    const originalCardBg = scheduleOutputCard.style.backgroundColor;
-    const computedCardBg = getComputedStyle(scheduleOutputCard).backgroundColor;
+    const scheduleOutputCard = document.getElementById("class-schedule-container"); // This has .schedule-table-wrapper
+    const responsiveContainer = scheduleOutputCard.querySelector(".table-responsive");
+    const table = document.getElementById("class-schedule-table");
 
-    // Set a solid background for rendering
-    if (
-      computedCardBg === "rgba(0, 0, 0, 0)" ||
-      computedCardBg === "transparent"
-    ) {
-      scheduleOutputCard.style.backgroundColor = "var(--color-surface)";
+    // --- Store original styles ---
+    const originalStyles = [];
+    function storeStyle(element, property) {
+        // Only store if the element exists
+        if (element) {
+            originalStyles.push({ element, property, value: element.style[property] });
+        }
     }
 
-    // Temporarily adjust styles for full content capture
-    const originalOverflow = responsiveContainer.style.overflow;
-    const originalWidth = responsiveContainer.style.width;
-    const originalHeight = responsiveContainer.style.height;
-    responsiveContainer.style.overflow = "visible";
-    responsiveContainer.style.width = "auto";
-    responsiveContainer.style.height = "auto";
+    // Schedule Output Card (which is also .schedule-table-wrapper)
+    storeStyle(scheduleOutputCard, 'maxHeight');
+    storeStyle(scheduleOutputCard, 'overflowY');
+    storeStyle(scheduleOutputCard, 'overflowX');
 
-    domtoimage
-      .toPng(scheduleOutputCard, {
-        // Use the full content size
-        width: scheduleOutputCard.scrollWidth,
-        height: scheduleOutputCard.scrollHeight,
-        style: {
-          // Ensure the card's padding and margins are preserved
-          padding: getComputedStyle(scheduleOutputCard).padding,
-          margin: "0",
-        },
-        filter: (node) => {
-          // Exclude unwanted elements (e.g., buttons outside the table)
-          return node !== saveImageButton;
-        },
-      })
-      .then((dataUrl) => {
-        // Restore original styles
-        scheduleOutputCard.style.backgroundColor = originalCardBg;
-        responsiveContainer.style.overflow = originalOverflow;
-        responsiveContainer.style.width = originalWidth;
-        responsiveContainer.style.height = originalHeight;
+    // Responsive Container
+    storeStyle(responsiveContainer, 'maxHeight');
+    storeStyle(responsiveContainer, 'overflowX');
+    storeStyle(responsiveContainer, 'overflowY');
 
-        // Trigger download
-        const link = document.createElement("a");
-        link.href = dataUrl;
-        link.download = `my-schedule-${templateSelect.value.replace(
-          "theme-",
-          ""
-        )}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      })
-      .catch((err) => {
-        // Restore styles on error
-        scheduleOutputCard.style.backgroundColor = originalCardBg;
-        responsiveContainer.style.overflow = originalOverflow;
-        responsiveContainer.style.width = originalWidth;
-        responsiveContainer.style.height = originalHeight;
+    // Table
+    storeStyle(table, 'tableLayout');
+    storeStyle(table, 'width');
 
-        console.error("Error saving image:", err);
-        alert("Sorry, there was an error saving the image. Please try again.");
-      });
+    // Table cells, course entries, course names
+    const elementsToUnrestrict = table.querySelectorAll("th, td, .course-entry, .course-name");
+    elementsToUnrestrict.forEach(el => {
+        storeStyle(el, 'height');
+        storeStyle(el, 'maxHeight');
+        storeStyle(el, 'overflow');
+        storeStyle(el, 'whiteSpace');
+        storeStyle(el, 'textOverflow');
+    });
+    
+    const originalCardComputedBg = getComputedStyle(scheduleOutputCard).backgroundColor;
+    const originalCardInlineBg = scheduleOutputCard.style.backgroundColor;
+
+
+    // --- Apply temporary styles for capture ---
+    // Ensure a background for the card if transparent
+    if (originalCardComputedBg === "rgba(0, 0, 0, 0)" || originalCardComputedBg === "transparent") {
+        scheduleOutputCard.style.backgroundColor = "var(--color-surface)"; // Or a specific white like #FFFFFF
+    }
+
+    scheduleOutputCard.style.maxHeight = "none";
+    scheduleOutputCard.style.overflowY = "visible";
+    scheduleOutputCard.style.overflowX = "visible"; 
+
+    if (responsiveContainer) {
+        responsiveContainer.style.maxHeight = "none";
+        responsiveContainer.style.overflowX = "visible";
+        responsiveContainer.style.overflowY = "visible";
+    }
+
+    if (table) {
+        table.style.tableLayout = "auto";
+        table.style.width = "auto"; // Let content determine width, or "max-content"
+    }
+    
+    elementsToUnrestrict.forEach(el => {
+        el.style.height = "auto";
+        el.style.maxHeight = "none";
+        el.style.overflow = "visible";
+        el.style.whiteSpace = "normal"; // Allow wrapping
+        el.style.textOverflow = "clip";
+    });
+
+    // Delay for browser reflow
+    setTimeout(() => {
+        domtoimage.toPng(scheduleOutputCard, {
+            width: scheduleOutputCard.scrollWidth,
+            height: scheduleOutputCard.scrollHeight
+            // No specific 'style' option needed here as we modified the live DOM
+        })
+        .then((dataUrl) => {
+            const link = document.createElement("a");
+            link.href = dataUrl;
+            link.download = `my-schedule-${templateSelect.value.replace("theme-", "")}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        })
+        .catch((err) => {
+            console.error("Error saving image:", err);
+            alert("Sorry, there was an error saving the image. Please try again.");
+        })
+        .finally(() => {
+            // Restore original styles
+            originalStyles.forEach(s => {
+                // Check if element still exists, though it should
+                if (s.element) {
+                    s.element.style[s.property] = s.value;
+                }
+            });
+            // Restore the original inline background style for the card
+            scheduleOutputCard.style.backgroundColor = originalCardInlineBg;
+        });
+    }, 250); // 250ms delay, adjust if needed for complex tables
   });
   // Global click listener for autocomplete
 document.addEventListener("click", (e) => {
