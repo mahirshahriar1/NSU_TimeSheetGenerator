@@ -18,7 +18,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const LOCAL_STORAGE_SCHEDULE_KEY = "weeklySchedulerData";
   const LOCAL_STORAGE_COLOR_MAP_KEY = "weeklySchedulerColorMap";
   const LOCAL_STORAGE_GLOBAL_COURSES_KEY = "weeklySchedulerGlobalCourses";
-
   const defaultCourseColors = [
     "#E0BBE4",
     "#957DAD",
@@ -35,6 +34,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // DOM Elements
   const courseInputGrid = document.getElementById("course-input-grid");
+  const courseInputGridWrapper = document.getElementById(
+    "course-input-grid-wrapper"
+  );
   const generateButton = document.getElementById("generate-button");
   const clearAllButton = document.getElementById("clear-all-button");
   const outputSection = document.getElementById("output-section");
@@ -44,7 +46,6 @@ document.addEventListener("DOMContentLoaded", () => {
     classScheduleTable.createTBody();
   const templateSelect = document.getElementById("template-select");
   const saveImageButton = document.getElementById("save-image-button");
-
   const globalCourseNameInput = document.getElementById(
     "global-course-name-input"
   );
@@ -55,19 +56,18 @@ document.addEventListener("DOMContentLoaded", () => {
     "add-global-course-button"
   );
   const globalCourseListUL = document.getElementById("global-course-list-ul");
-
   const autocompleteSuggestionsContainer = document.getElementById(
     "autocomplete-suggestions"
   );
+
   let activeAutocompleteInput = null;
   let autocompleteDebounceTimer;
-
   let courseColorMap = {};
   let globalCourseList = [];
+  let isSelectingAutocomplete = false; // Flag for autocomplete selection
 
   // --- Helper Functions ---
   function formatTimePart(timeStr) {
-    /* ... (same) ... */
     let hour, minute;
     if (timeStr.length <= 2) {
       hour = parseInt(timeStr, 10);
@@ -87,7 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
     )}`;
   }
   const timeSlots = rawTimeSlotData.map((slotStr, index) => {
-    /* ... (same) ... */
     const cleanSlotStr = slotStr.trim();
     const [startStr, endStr] = cleanSlotStr.split("-");
     const display = `${formatTimePart(startStr)} - ${formatTimePart(endStr)}`;
@@ -105,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-  // --- Global Course List Management --- (Same as before)
+  // --- Global Course List Management ---
   function saveGlobalCourseList() {
     localStorage.setItem(
       LOCAL_STORAGE_GLOBAL_COURSES_KEY,
@@ -118,7 +117,6 @@ document.addEventListener("DOMContentLoaded", () => {
     renderGlobalCourseList();
   }
   function renderGlobalCourseList() {
-    /* ... (same) ... */
     globalCourseListUL.innerHTML = "";
     if (globalCourseList.length === 0) {
       globalCourseListUL.innerHTML = "<li>No courses saved yet.</li>";
@@ -135,7 +133,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   function addGlobalCourse() {
-    /* ... (same) ... */
     const name = globalCourseNameInput.value.trim();
     const color = globalCourseColorInput.value;
     if (!name) {
@@ -144,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const nameKey = getCourseNameKey(name);
     if (globalCourseList.some((c) => getCourseNameKey(c.name) === nameKey)) {
-      alert("This course name already exists in the global list.");
+      alert("This course name already exists.");
       return;
     }
     globalCourseList.push({ id: generateUUID(), name: name, color: color });
@@ -153,16 +150,16 @@ document.addEventListener("DOMContentLoaded", () => {
     globalCourseNameInput.value = "";
   }
   function removeGlobalCourse(courseId) {
-    /* ... (same) ... */
-
-    globalCourseList = globalCourseList.filter(
-      (course) => course.id !== courseId
-    );
-    saveGlobalCourseList();
-    renderGlobalCourseList();
+    if (confirm("Remove this course from the global list?")) {
+      globalCourseList = globalCourseList.filter(
+        (course) => course.id !== courseId
+      );
+      saveGlobalCourseList();
+      renderGlobalCourseList();
+    }
   }
 
-  // --- Local Storage for Active Schedule Color Map --- (Same as before)
+  // --- Local Storage for Active Schedule Color Map ---
   function saveColorMapToLocalStorage() {
     localStorage.setItem(
       LOCAL_STORAGE_COLOR_MAP_KEY,
@@ -174,60 +171,82 @@ document.addEventListener("DOMContentLoaded", () => {
     courseColorMap = savedMap ? JSON.parse(savedMap) : {};
   }
 
-  // --- Autocomplete --- (Same as before)
-  function showAutocompleteSuggestions(textInput, suggestions) {
-    /* ... (same) ... */
-    activeAutocompleteInput = textInput;
-    autocompleteSuggestionsContainer.innerHTML = "";
-    if (suggestions.length === 0) {
-      hideAutocompleteSuggestions();
-      return;
-    }
-    suggestions.forEach((course) => {
-      const item = document.createElement("div");
-      item.className = "autocomplete-suggestion-item";
-      item.innerHTML = `<span class="suggestion-color-swatch" style="background-color: ${course.color};"></span><span>${course.name}</span>`;
-      item.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        selectAutocompleteSuggestion(course);
-      });
-      autocompleteSuggestionsContainer.appendChild(item);
-    });
-    const inputRect = textInput.getBoundingClientRect();
-    const gridWrapperRect = courseInputGridWrapper.getBoundingClientRect();
-    autocompleteSuggestionsContainer.style.display = "block";
-    autocompleteSuggestionsContainer.style.top = `${
-      inputRect.bottom - gridWrapperRect.top
-    }px`;
-    autocompleteSuggestionsContainer.style.left = `${
-      inputRect.left - gridWrapperRect.left
-    }px`;
-    autocompleteSuggestionsContainer.style.width = `${inputRect.width}px`;
+function updateAutocompleteSuggestions(textInput) {
+  if (document.activeElement !== textInput) {
+    return;
   }
-  function hideAutocompleteSuggestions() {
-    autocompleteSuggestionsContainer.style.display = "none";
-    activeAutocompleteInput = null;
-  }
-  function selectAutocompleteSuggestion(course) {
-    // MODIFIED: No direct colorInput manipulation
-    if (activeAutocompleteInput) {
-      activeAutocompleteInput.value = course.name;
-      handleCourseNameChange(activeAutocompleteInput); // This will set the color in courseColorMap
-      activeAutocompleteInput.focus();
-    }
-    hideAutocompleteSuggestions();
-  }
-  function handleAutocompleteInput(textInput) {
-    /* ... (same) ... */
-    const query = textInput.value.trim().toUpperCase();
-    if (query.length < 1) {
-      hideAutocompleteSuggestions();
-      return;
-    }
-    const filteredCourses = globalCourseList.filter((course) =>
+  const query = textInput.value.trim().toUpperCase();
+  let suggestions;
+
+  if (query === "" && document.activeElement === textInput) {
+    suggestions = [...globalCourseList];
+  } else if (query.length > 0) {
+    suggestions = globalCourseList.filter((course) =>
       course.name.toUpperCase().includes(query)
     );
-    showAutocompleteSuggestions(textInput, filteredCourses);
+  } else {
+    hideAutocompleteSuggestions();
+    return;
+  }
+
+  activeAutocompleteInput = textInput;
+  autocompleteSuggestionsContainer.innerHTML = "";
+
+  if (suggestions.length === 0) {
+    hideAutocompleteSuggestions();
+    return;
+  }
+
+  suggestions.forEach((course) => {
+    const item = document.createElement("div");
+    item.className = "autocomplete-suggestion-item";
+    item.innerHTML = `<span class="suggestion-color-swatch" style="background-color: ${course.color};"></span><span>${course.name}</span>`;
+    item.addEventListener("mousedown", (e) => {
+      e.preventDefault();
+      isSelectingAutocomplete = true;
+      selectAutocompleteSuggestion(course);
+    });
+    item.addEventListener("mouseup", () => {
+      isSelectingAutocomplete = false;
+    });
+    autocompleteSuggestionsContainer.appendChild(item);
+  });
+
+  const inputRect = textInput.getBoundingClientRect();
+  const gridWrapperRect = courseInputGridWrapper.getBoundingClientRect();
+  autocompleteSuggestionsContainer.style.display = "block";
+  autocompleteSuggestionsContainer.style.top = `${
+    inputRect.bottom - gridWrapperRect.top + 2
+  }px`;
+  autocompleteSuggestionsContainer.style.left = `${
+    inputRect.left - gridWrapperRect.left
+  }px`;
+  autocompleteSuggestionsContainer.style.width = `${inputRect.width}px`;
+}
+
+  function hideAutocompleteSuggestions() {
+    if (autocompleteSuggestionsContainer) {
+      autocompleteSuggestionsContainer.style.display = "none";
+    }
+    // Do not nullify activeAutocompleteInput here as blur might still need it briefly
+  }
+
+  function selectAutocompleteSuggestion(course) {
+    if (activeAutocompleteInput) {
+      activeAutocompleteInput.value = course.name;
+      // Programmatically trigger events to ensure all associated logic runs
+      activeAutocompleteInput.dispatchEvent(
+        new Event("input", { bubbles: true, cancelable: true })
+      );
+      // handleCourseNameChange will be called by blur, which should be triggered by focus change
+      activeAutocompleteInput.focus(); // This will also trigger blur on the previous state if any
+      // And focus on this element again, which is fine.
+      // The main goal is to ensure handleCourseNameChange is called.
+      // Directly call handleCourseNameChange for immediate color update in map
+      handleCourseNameChange(activeAutocompleteInput);
+      saveScheduleToLocalStorage(collectScheduleData()); // Save after potential changes
+    }
+    // Intentionally not hiding here - let the blur/focus flow manage it
   }
 
   // --- Input Form Creation & Event Handling ---
@@ -236,8 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
     defaultColorCycleIndex = 0;
     courseInputGrid.style.gridTemplateColumns = `auto repeat(${timeSlots.length}, 1fr)`;
 
-    const headerFragment =
-      document.createDocumentFragment(); /* ... (header same) ... */
+    const headerFragment = document.createDocumentFragment();
     const emptyHeaderCell = document.createElement("div");
     emptyHeaderCell.className = "grid-cell";
     headerFragment.appendChild(emptyHeaderCell);
@@ -255,97 +273,105 @@ document.addEventListener("DOMContentLoaded", () => {
       dayLabel.className = "grid-cell day-label";
       dayLabel.textContent = day.name;
       rowFragment.appendChild(dayLabel);
-
       timeSlots.forEach((slot) => {
         const inputCell = document.createElement("div");
         inputCell.className = "grid-cell";
         const cellContentWrapper = document.createElement("div");
-        cellContentWrapper.className = "grid-cell-content"; // Will now just hold the text input
-
+        cellContentWrapper.className = "grid-cell-content";
         const textInput = document.createElement("input");
         textInput.type = "text";
         textInput.placeholder = `Course`;
         textInput.dataset.day = day.abbr;
         textInput.dataset.timeSlotDisplay = slot.display;
-
         const savedEntry = savedSchedule.find(
           (entry) =>
             entry.dayAbbr === day.abbr && entry.timeSlotDisplay === slot.display
         );
-
         if (savedEntry && savedEntry.courseName) {
           textInput.value = savedEntry.courseName;
-          // Color for this course (if any) will be determined by handleCourseNameChange/map later
         }
 
-        // No color input created here in the grid
-
-        textInput.addEventListener("input", (e) => {
+        textInput.addEventListener("input", () => {
           clearTimeout(autocompleteDebounceTimer);
           autocompleteDebounceTimer = setTimeout(() => {
-            handleAutocompleteInput(e.target);
-          }, 250);
+            updateAutocompleteSuggestions(textInput);
+          }, 200);
         });
-        textInput.addEventListener("focus", (e) => {
-          if (e.target.value.trim().length > 0)
-            handleAutocompleteInput(e.target);
+        textInput.addEventListener("focus", () => {
+          activeAutocompleteInput = textInput; // Set active on focus
+          updateAutocompleteSuggestions(textInput);
         });
-        textInput.addEventListener("blur", (e) => {
-          setTimeout(() => {
-            if (
-              !autocompleteSuggestionsContainer.contains(document.activeElement)
-            ) {
-              hideAutocompleteSuggestions();
-            }
-          }, 150);
-          handleCourseNameChange(e.target); // Process name and set/sync color
-          saveScheduleToLocalStorage(collectScheduleData());
-        });
+       textInput.addEventListener("blur", (e) => {
+  // Only hide suggestions if not selecting and not focusing another input
+  setTimeout(() => {
+    if (
+      !isSelectingAutocomplete &&
+      !autocompleteSuggestionsContainer.contains(document.activeElement) &&
+      // Check if the relatedTarget is another input (i.e., switching fields)
+      !(e.relatedTarget && e.relatedTarget.type === "text")
+    ) {
+      hideAutocompleteSuggestions();
+      activeAutocompleteInput = null; // Clear active input after hiding
+    }
+  }, 300);
+  handleCourseNameChange(e.target);
+  saveScheduleToLocalStorage(collectScheduleData());
+});
         textInput.addEventListener("keydown", (e) => {
-          /* ... (same keyboard nav) ... */
           const items = autocompleteSuggestionsContainer.querySelectorAll(
             ".autocomplete-suggestion-item"
           );
           if (
-            !items.length ||
-            autocompleteSuggestionsContainer.style.display === "none"
+            autocompleteSuggestionsContainer.style.display === "none" ||
+            !items.length
           )
             return;
-          let activeItem =
-            autocompleteSuggestionsContainer.querySelector(".active");
-          let activeIndex = Array.from(items).indexOf(activeItem);
+          let activeItem = autocompleteSuggestionsContainer.querySelector(
+            ".autocomplete-suggestion-item.active"
+          );
+          let currentIndex = activeItem
+            ? Array.from(items).indexOf(activeItem)
+            : -1;
+
           if (e.key === "ArrowDown") {
             e.preventDefault();
             if (activeItem) activeItem.classList.remove("active");
-            activeIndex = (activeIndex + 1) % items.length;
-            items[activeIndex].classList.add("active");
-            items[activeIndex].scrollIntoView({ block: "nearest" });
+            currentIndex = (currentIndex + 1) % items.length;
+            items[currentIndex].classList.add("active");
+            items[currentIndex].scrollIntoView({ block: "nearest" });
           } else if (e.key === "ArrowUp") {
             e.preventDefault();
             if (activeItem) activeItem.classList.remove("active");
-            activeIndex = (activeIndex - 1 + items.length) % items.length;
-            items[activeIndex].classList.add("active");
-            items[activeIndex].scrollIntoView({ block: "nearest" });
-          } else if (e.key === "Enter" && activeItem) {
-            e.preventDefault();
-            activeItem.dispatchEvent(new MouseEvent("mousedown"));
+            currentIndex = (currentIndex - 1 + items.length) % items.length;
+            items[currentIndex].classList.add("active");
+            items[currentIndex].scrollIntoView({ block: "nearest" });
+          } else if (e.key === "Enter") {
+            if (activeItem) {
+              e.preventDefault();
+              // Find the course object that matches the activeItem's text content
+              const selectedCourseName = activeItem.textContent.trim(); // Or extract from a data attribute if you store full object there
+              const courseObject = globalCourseList.find(
+                (gc) => gc.name === selectedCourseName
+              );
+              if (courseObject) {
+                selectAutocompleteSuggestion(courseObject);
+              }
+              hideAutocompleteSuggestions(); // Hide after selection by Enter
+            }
           } else if (e.key === "Escape") {
             hideAutocompleteSuggestions();
           }
         });
-
-        cellContentWrapper.appendChild(textInput); // Only text input now
+        cellContentWrapper.appendChild(textInput);
         inputCell.appendChild(cellContentWrapper);
         rowFragment.appendChild(inputCell);
       });
       courseInputGrid.appendChild(rowFragment);
     });
-    // After grid is built, ensure colors for existing text values are set from map/global
     syncAllInitialGridColors();
   }
 
   function handleCourseNameChange(textInputElement) {
-    // No associatedColorInput needed from grid
     const courseName = textInputElement.value;
     const courseKey = getCourseNameKey(courseName);
 
@@ -360,36 +386,23 @@ document.addEventListener("DOMContentLoaded", () => {
       } else if (courseColorMap[courseKey]) {
         colorToSet = courseColorMap[courseKey];
       } else {
-        // New course name for this session, assign a default cycle color
         colorToSet =
           defaultCourseColors[
             defaultColorCycleIndex % defaultCourseColors.length
           ];
-        defaultColorCycleIndex++; // Increment only when a new color is truly assigned
+        defaultColorCycleIndex++;
       }
-
-      courseColorMap[courseKey] = colorToSet; // Update/set in active map
-      // No direct color picker in grid to update, map is the source of truth for rendering
+      courseColorMap[courseKey] = colorToSet;
       saveColorMapToLocalStorage();
-    } else {
-      // If course name is cleared, we don't necessarily remove from map.
-      // If it's re-typed, it will pick up its old color.
     }
   }
-
-  // This function is now obsolete as there's no color picker in the grid
-  // function handleColorChange(colorInputElement, associatedTextInput, isLivePreview = false) {}
-
-  // This function syncs colors in the output table, not input grid color pickers
-  // It's also not needed as renderScheduleTable will use courseColorMap
-  // function syncColorForCourse(targetCourseKey, colorToSet,  excludeInputElement = null) {}
 
   function syncAllInitialGridColors() {
     const allTextInputs =
       courseInputGrid.querySelectorAll('input[type="text"]');
     allTextInputs.forEach((textInput) => {
       if (textInput.value.trim() !== "") {
-        handleCourseNameChange(textInput); // This will ensure its color is in courseColorMap
+        handleCourseNameChange(textInput);
       }
     });
   }
@@ -397,100 +410,115 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Data Collection & Rendering ---
   function collectScheduleData() {
     const entries = [];
-    const textInputs = courseInputGrid.querySelectorAll('input[type="text"]'); // Simpler query now
+    const textInputs = courseInputGrid.querySelectorAll('input[type="text"]');
     textInputs.forEach((textInput) => {
       const courseName = textInput.value.trim();
       if (courseName !== "") {
         const courseKey = getCourseNameKey(courseName);
-        let color = courseColorMap[courseKey]; // Get color from map
-
-        if (!color) {
-          // Should not happen if syncAllInitialGridColors worked, but as a fallback
+        if (!courseColorMap[courseKey]) {
           const globalCourse = globalCourseList.find(
             (gc) => getCourseNameKey(gc.name) === courseKey
           );
-          if (globalCourse) {
-            color = globalCourse.color;
-          } else {
-            color =
-              defaultCourseColors[
-                defaultColorCycleIndex % defaultCourseColors.length
+          courseColorMap[courseKey] = globalCourse
+            ? globalCourse.color
+            : defaultCourseColors[
+                defaultColorCycleIndex++ % defaultCourseColors.length
               ];
-            // Don't increment defaultColorCycleIndex here, it's for initial assignment
-          }
-          courseColorMap[courseKey] = color; // Ensure it's in map
+          saveColorMapToLocalStorage(); // Save if a new color was assigned here
         }
-
         entries.push({
           dayAbbr: textInput.dataset.day,
           timeSlotDisplay: textInput.dataset.timeSlotDisplay,
           courseName: courseName,
-          courseColor: color,
+          courseColor: courseColorMap[courseKey],
         });
       }
     });
     return entries;
   }
-  function renderScheduleTable(dataForTable) {
-    /* ... (same rendering logic as before, uses entry.courseColor) ... */
-    classScheduleTableBody.innerHTML = "";
-    let thead = classScheduleTable.querySelector("thead");
-    if (!thead) {
-      thead = classScheduleTable.createTHead();
-      const headerRow = thead.insertRow();
-      const thDay = document.createElement("th");
-      thDay.textContent = "Day";
-      headerRow.appendChild(thDay);
-      timeSlots.forEach((slot) => {
-        const thTime = document.createElement("th");
-        thTime.innerHTML = slot.display;
-        headerRow.appendChild(thTime);
-      });
-    }
-    let rowsAdded = 0;
-    days.forEach((day) => {
-      const row = classScheduleTableBody.insertRow();
-      rowsAdded++;
-      const dayCell = row.insertCell();
-      dayCell.className = "day-col";
-      dayCell.textContent = day.name;
-      timeSlots.forEach((slot) => {
-        const cell = row.insertCell();
-        const entry = dataForTable.find(
-          (e) => e.dayAbbr === day.abbr && e.timeSlotDisplay === slot.display
-        );
-        if (entry) {
-          const entryWrapper = document.createElement("div");
-          entryWrapper.className = "course-entry";
-          const colorIndicator = document.createElement("div");
-          colorIndicator.className = "course-color-indicator";
-          colorIndicator.style.backgroundColor = entry.courseColor || "#cccccc";
-          const courseNameSpan = document.createElement("span");
-          courseNameSpan.className = "course-name";
-          courseNameSpan.textContent = entry.courseName;
-          entryWrapper.appendChild(colorIndicator);
-          entryWrapper.appendChild(courseNameSpan);
-          cell.appendChild(entryWrapper);
-        } else {
-          cell.innerHTML = " ";
-        }
-      });
+function renderScheduleTable(dataForTable) {
+  classScheduleTableBody.innerHTML = "";
+  let thead = classScheduleTable.querySelector("thead");
+  if (!thead) {
+    thead = classScheduleTable.createTHead();
+    const headerRow = thead.insertRow();
+    const thDay = document.createElement("th");
+    thDay.textContent = "Day";
+    headerRow.appendChild(thDay);
+    timeSlots.forEach((slot) => {
+      const thTime = document.createElement("th");
+      thTime.innerHTML = slot.display;
+      headerRow.appendChild(thTime);
     });
-    if (rowsAdded === 0 && dataForTable.length === 0) {
-      const row = classScheduleTableBody.insertRow();
-      const cell = row.insertCell();
-      cell.colSpan = timeSlots.length + 1;
-      cell.textContent =
-        'No classes entered. Fill the form above and click "Generate Schedule".';
-      cell.style.textAlign = "center";
-      cell.style.padding = "20px";
-      outputSection.style.display = "block";
-    } else if (rowsAdded > 0) {
-      outputSection.style.display = "block";
-    } else {
-      outputSection.style.display = "none";
-    }
   }
+  let rowsAdded = 0;
+  days.forEach((day) => {
+    const row = classScheduleTableBody.insertRow();
+    rowsAdded++;
+    row.style.height = "40px"; // Fixed row height
+    row.style.maxHeight = "40px"; // Ensure no expansion
+    row.style.lineHeight = "1.2"; // Control text vertical alignment
+    row.style.overflow = "hidden"; // Prevent row overflow
+    const dayCell = row.insertCell();
+    dayCell.className = "day-col";
+    dayCell.textContent = day.name;
+    dayCell.style.verticalAlign = "middle";
+    dayCell.style.overflow = "hidden";
+    dayCell.style.textOverflow = "ellipsis";
+    dayCell.style.whiteSpace = "nowrap";
+    dayCell.style.maxHeight = "40px";
+    timeSlots.forEach((slot) => {
+      const cell = row.insertCell();
+      cell.style.verticalAlign = "middle";
+      cell.style.overflow = "hidden";
+      cell.style.maxHeight = "40px";
+      cell.style.lineHeight = "1.2";
+      cell.style.textOverflow = "ellipsis";
+      cell.style.whiteSpace = "nowrap";
+      const entry = dataForTable.find(
+        (e) => e.dayAbbr === day.abbr && e.timeSlotDisplay === slot.display
+      );
+      if (entry) {
+        const entryWrapper = document.createElement("div");
+        entryWrapper.className = "course-entry";
+        entryWrapper.style.maxHeight = "36px"; // Slightly less to account for padding
+        entryWrapper.style.overflow = "hidden";
+        entryWrapper.style.textOverflow = "ellipsis";
+        entryWrapper.style.whiteSpace = "nowrap";
+        const colorIndicator = document.createElement("div");
+        colorIndicator.className = "course-color-indicator";
+        colorIndicator.style.backgroundColor = entry.courseColor || "#cccccc";
+        const courseNameSpan = document.createElement("span");
+        courseNameSpan.className = "course-name";
+        courseNameSpan.textContent = entry.courseName;
+        entryWrapper.appendChild(colorIndicator);
+        entryWrapper.appendChild(courseNameSpan);
+        cell.appendChild(entryWrapper);
+      } else {
+        cell.innerHTML = " "; // Non-breaking space for consistent height
+      }
+    });
+  });
+  if (rowsAdded === 0 && dataForTable.length === 0) {
+    const row = classScheduleTableBody.insertRow();
+    row.style.height = "40px";
+    row.style.maxHeight = "40px";
+    const cell = row.insertCell();
+    cell.colSpan = timeSlots.length + 1;
+    cell.textContent =
+      'No classes entered. Fill the form above and click "Generate Schedule".';
+    cell.style.textAlign = "center";
+    cell.style.padding = "20px";
+    cell.style.verticalAlign = "middle";
+    cell.style.overflow = "hidden";
+    cell.style.maxHeight = "40px";
+    outputSection.style.display = "block";
+  } else if (rowsAdded > 0) {
+    outputSection.style.display = "block";
+  } else {
+    outputSection.style.display = "none";
+  }
+}
 
   // --- Local Storage for Schedule Data ---
   function saveScheduleToLocalStorage(scheduleData) {
@@ -508,13 +536,16 @@ document.addEventListener("DOMContentLoaded", () => {
   function clearAllInputs() {
     const textInputs = courseInputGrid.querySelectorAll('input[type="text"]');
     textInputs.forEach((input) => (input.value = ""));
-    // No color pickers in the grid to reset
-    courseColorMap = {}; // Clear the active session color map
-    defaultColorCycleIndex = 0; // Reset default color cycle
-
-    localStorage.removeItem(LOCAL_STORAGE_SCHEDULE_KEY);
-    localStorage.removeItem(LOCAL_STORAGE_COLOR_MAP_KEY);
-
+    courseColorMap = {};
+    defaultColorCycleIndex = 0;
+    if (
+      confirm(
+        "Clear current schedule entries and associated colors? \n(Global course list remains)."
+      )
+    ) {
+      localStorage.removeItem(LOCAL_STORAGE_SCHEDULE_KEY);
+      localStorage.removeItem(LOCAL_STORAGE_COLOR_MAP_KEY);
+    }
     renderScheduleTable([]);
     outputSection.style.display = "none";
   }
@@ -522,10 +553,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Event Listeners ---
   addGlobalCourseButton.addEventListener("click", addGlobalCourse);
   generateButton.addEventListener("click", () => {
-    const scheduleData = collectScheduleData(); // Collects data, ensuring colors are from map
+    const scheduleData = collectScheduleData();
     renderScheduleTable(scheduleData);
-    saveScheduleToLocalStorage(scheduleData); // Save schedule (which now has map-derived colors)
-    saveColorMapToLocalStorage(); // Save the potentially updated map
+    saveScheduleToLocalStorage(scheduleData);
+    saveColorMapToLocalStorage();
     applyTheme(templateSelect.value);
   });
   clearAllButton.addEventListener("click", clearAllInputs);
@@ -533,77 +564,57 @@ document.addEventListener("DOMContentLoaded", () => {
     applyTheme(event.target.value)
   );
 
-  // --- Save Image Button --- CORRECTED ---
+  // --- SAVE IMAGE BUTTON (Offscreen Clone Strategy - Simplified & Focused) ---
   saveImageButton.addEventListener("click", () => {
     const scheduleOutputCard = document.getElementById(
       "class-schedule-container"
-    ); // The card itself
-    const tableToCapture = document.getElementById("class-schedule-table"); // The table inside
-
-    // Temporarily set a defined background for the card if it's transparent or complex
-    // This helps html2canvas render it correctly.
+    );
+    const responsiveContainer =
+      scheduleOutputCard.querySelector(".table-responsive");
     const originalCardBg = scheduleOutputCard.style.backgroundColor;
     const computedCardBg = getComputedStyle(scheduleOutputCard).backgroundColor;
+
+    // Set a solid background for rendering
     if (
       computedCardBg === "rgba(0, 0, 0, 0)" ||
       computedCardBg === "transparent"
     ) {
-      scheduleOutputCard.style.backgroundColor = "var(--color-surface)"; // Use a CSS variable or solid color
+      scheduleOutputCard.style.backgroundColor = "var(--color-surface)";
     }
 
-    // If the table itself has a different background due to theme, html2canvas should pick it up.
-    // No need to modify table's direct style unless it's also transparent.
+    // Temporarily adjust styles for full content capture
+    const originalOverflow = responsiveContainer.style.overflow;
+    const originalWidth = responsiveContainer.style.width;
+    const originalHeight = responsiveContainer.style.height;
+    responsiveContainer.style.overflow = "visible";
+    responsiveContainer.style.width = "auto";
+    responsiveContainer.style.height = "auto";
 
-    // Get scroll dimensions of the table *within* its responsive container
-    const responsiveContainer =
-      scheduleOutputCard.querySelector(".table-responsive");
-    const tableScrollWidth = responsiveContainer.scrollWidth;
-    const tableScrollHeight = responsiveContainer.scrollHeight;
+    domtoimage
+      .toPng(scheduleOutputCard, {
+        // Use the full content size
+        width: scheduleOutputCard.scrollWidth,
+        height: scheduleOutputCard.scrollHeight,
+        style: {
+          // Ensure the card's padding and margins are preserved
+          padding: getComputedStyle(scheduleOutputCard).padding,
+          margin: "0",
+        },
+        filter: (node) => {
+          // Exclude unwanted elements (e.g., buttons outside the table)
+          return node !== saveImageButton;
+        },
+      })
+      .then((dataUrl) => {
+        // Restore original styles
+        scheduleOutputCard.style.backgroundColor = originalCardBg;
+        responsiveContainer.style.overflow = originalOverflow;
+        responsiveContainer.style.width = originalWidth;
+        responsiveContainer.style.height = originalHeight;
 
-    html2canvas(scheduleOutputCard, {
-      // Capture the entire card
-      scale: window.devicePixelRatio > 1 ? window.devicePixelRatio : 1.5, // Adjust scale as needed
-      useCORS: true,
-      logging: false,
-      scrollX: -responsiveContainer.scrollLeft, // Capture from the scrolled position
-      scrollY: -responsiveContainer.scrollTop,
-      width: tableScrollWidth, // Tell html2canvas the full width of content
-      height:
-        tableScrollHeight +
-        parseFloat(getComputedStyle(scheduleOutputCard).paddingTop) +
-        parseFloat(getComputedStyle(scheduleOutputCard).paddingBottom) +
-        (scheduleOutputCard.querySelector(".card-title")
-          ? scheduleOutputCard.querySelector(".card-title").offsetHeight
-          : 0), // Approximate height of card content
-      windowWidth: tableScrollWidth, // Canvas rendering window
-      windowHeight: tableScrollHeight, // Canvas rendering window
-      onclone: (clonedDoc) => {
-        // If there are issues with table rendering, ensure its container in clone is not restricting size
-        const clonedCard = clonedDoc.getElementById("class-schedule-container");
-        if (clonedCard) {
-          clonedCard.style.width = `${tableScrollWidth}px`;
-          clonedCard.style.height = "auto"; // let content define height
-          const clonedResponsive =
-            clonedCard.querySelector(".table-responsive");
-          if (clonedResponsive) {
-            clonedResponsive.style.overflow = "visible";
-            clonedResponsive.style.width = `${tableScrollWidth}px`;
-            clonedResponsive.style.height = `${tableScrollHeight}px`;
-          }
-          const clonedTable = clonedCard.querySelector("#class-schedule-table");
-          if (clonedTable) {
-            clonedTable.style.width = "100%"; // Ensure table uses the expanded width
-            clonedTable.style.minWidth = "0"; // Remove min-width if any
-          }
-        }
-      },
-    })
-      .then((canvas) => {
-        scheduleOutputCard.style.backgroundColor = originalCardBg; // Restore original card background
-
-        const image = canvas.toDataURL("image/png");
+        // Trigger download
         const link = document.createElement("a");
-        link.href = image;
+        link.href = dataUrl;
         link.download = `my-schedule-${templateSelect.value.replace(
           "theme-",
           ""
@@ -613,26 +624,31 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.removeChild(link);
       })
       .catch((err) => {
-        scheduleOutputCard.style.backgroundColor = originalCardBg; // Restore on error
+        // Restore styles on error
+        scheduleOutputCard.style.backgroundColor = originalCardBg;
+        responsiveContainer.style.overflow = originalOverflow;
+        responsiveContainer.style.width = originalWidth;
+        responsiveContainer.style.height = originalHeight;
+
         console.error("Error saving image:", err);
-        alert(
-          "Sorry, there was an error saving the image. Curse the developer."
-        );
+        alert("Sorry, there was an error saving the image. Please try again.");
       });
   });
-  // --- End Save Image Button ---
-
-  document.addEventListener("click", (e) => {
-    if (
-      activeAutocompleteInput &&
-      !activeAutocompleteInput.contains(e.target) &&
-      !autocompleteSuggestionsContainer.contains(e.target)
-    ) {
-      hideAutocompleteSuggestions();
-    }
-  });
+  // Global click listener for autocomplete
+document.addEventListener("click", (e) => {
+  if (
+    activeAutocompleteInput &&
+    !activeAutocompleteInput.contains(e.target) &&
+    !autocompleteSuggestionsContainer.contains(e.target) &&
+    !e.target.closest(".autocomplete-suggestion-item") &&
+    // Avoid hiding if clicking another input field
+    !(e.target.type === "text")
+  ) {
+    hideAutocompleteSuggestions();
+    activeAutocompleteInput = null; // Clear active input
+  }
+});
   function applyTheme(themeClass) {
-    /* ... (same) ... */
     const themePrefix = "theme-";
     classScheduleTable.classList.forEach((className) => {
       if (className.startsWith(themePrefix))

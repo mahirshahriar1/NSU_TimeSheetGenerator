@@ -161,6 +161,8 @@ body {
 
 /* --- Input Grid --- */
 #course-input-grid-wrapper {
+  /* IMPORTANT: For positioning autocomplete */
+  position: relative;
   overflow-x: auto;
   margin-bottom: calc(var(--spacing-unit) * 3);
   border: 1px solid var(--color-border-light);
@@ -184,8 +186,6 @@ body {
 .grid-cell:last-child {
   border-right: none;
 } /* For cells in the last column */
-/* For cells in the last row (JS might need to mark these, or use complex CSS selector) */
-/* #course-input-grid > div:nth-last-child(-n+NUMBER_OF_COLUMNS_INCLUDING_LABEL) .grid-cell { border-bottom: none; } */
 
 .grid-cell.day-label,
 .grid-cell.time-header {
@@ -323,57 +323,69 @@ body {
   border-color: var(--color-primary);
   box-shadow: var(--shadow-focus);
 }
-
-/* --- Schedule Table: The "WOW" Factor --- */
+/* Schedule Table: The "WOW" Factor */
 .schedule-table-wrapper {
-  /* padding-bottom: var(--spacing-unit); */ /* Already handled by card */
+  max-height: 280px; /* Fits 6 rows (240px) + header (40px) */
+  overflow-y: hidden; /* Prevent vertical scrollbar */
+  overflow-x: auto; /* Allow horizontal scrolling */
 }
+
 .table-responsive {
   overflow-x: auto;
+  overflow-y: hidden; /* Explicitly disable vertical scrolling */
   border: 1px solid var(--color-border-light);
   border-radius: var(--border-radius-md);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03); /* Subtle inner shadow */
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+  max-height: 280px; /* Matches wrapper to clip content */
+  box-sizing: border-box; /* Include borders in height calculation */
 }
+
 .schedule-table {
   width: 100%;
-  border-collapse: separate; /* Key for modern separated borders */
-  border-spacing: 0; /* Remove default spacing */
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 0.9rem;
   min-width: 700px;
+  table-layout: fixed; /* Ensure consistent column widths */
 }
+
 .schedule-table th,
 .schedule-table td {
-  padding: calc(var(--spacing-unit) * 1.75) calc(var(--spacing-unit) * 1.5); /* 14px 12px, slightly more vertical */
+  padding: calc(var(--spacing-unit) * 0.75) calc(var(--spacing-unit) * 1.5); /* 6px 12px, reduced vertical padding */
   text-align: left;
   vertical-align: middle;
-  border-bottom: 1px solid var(--color-border-light); /* Horizontal lines */
+  border-bottom: 1px solid var(--color-border-light);
+  height: 40px; /* Fixed height */
+  max-height: 40px; /* Prevent expansion */
+  line-height: 1.2; /* Control text alignment */
+  overflow: hidden; /* Clip overflowing content */
+  text-overflow: ellipsis; /* Truncate long text */
+  white-space: nowrap; /* Prevent wrapping */
+  box-sizing: border-box; /* Include padding in height */
 }
-/* Thin vertical lines BETWEEN columns */
+
 .schedule-table th:not(:last-child),
-.schedule-table td:not(:last-child) {
+.schedule-table td:not(.day-col):not(:last-child) {
   border-right: 1px solid var(--color-border-light);
 }
 
 .schedule-table thead th {
-  /* Table Header Styling */
   font-weight: 500;
   white-space: nowrap;
   color: var(--color-text-muted);
   background-color: var(--color-surface-alt);
-  border-bottom-width: 1px; /* Slightly thicker bottom border for header */
+  border-bottom-width: 1px;
   border-bottom-color: var(--color-border-medium);
-  position: sticky; /* Sticky headers */
+  position: sticky;
   top: 0;
-  z-index: 10; /* Ensure headers are above content when scrolling */
+  z-index: 10;
 }
+
 .schedule-table thead th:first-child {
-  /* Top-left corner of header */
-  border-top-left-radius: calc(
-    var(--border-radius-md) - 1px
-  ); /* Match table wrapper */
+  border-top-left-radius: calc(var(--border-radius-md) - 1px);
 }
+
 .schedule-table thead th:last-child {
-  /* Top-right corner of header */
   border-top-right-radius: calc(var(--border-radius-md) - 1px);
 }
 
@@ -382,164 +394,173 @@ body {
   background-color: var(--color-surface);
   transition: background-color var(--transition-fast);
 }
+
 .schedule-table tbody tr:last-child td {
   border-bottom: none;
 }
+
 .schedule-table tbody tr:last-child td:first-child {
   border-bottom-left-radius: calc(var(--border-radius-md) - 1px);
 }
+
 .schedule-table tbody tr:last-child td:last-child {
   border-bottom-right-radius: calc(var(--border-radius-md) - 1px);
 }
 
 .schedule-table td.day-col {
-  /* Day Column Specifics */
   font-weight: 500;
   white-space: nowrap;
-  background-color: var(--color-surface-alt); /* Distinct background */
+  background-color: var(--color-surface-alt);
   color: var(--color-text-base);
-  border-right-width: 1px; /* Slightly thicker right border for day column */
-  border-right-color: var(--color-border-medium);
+  border-right: 1px solid var(--color-border-medium);
 }
 
-/* --- Default Theme (theme-default) --- */
-/* Base table styles are already quite "default" and modern */
-.theme-default {
-} /* Minimal overrides needed */
+/* Output Table Cell with Color Indicator */
+.schedule-table td .course-entry {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-unit);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-height: 36px; /* Slightly less than cell to account for padding */
+  line-height: 1.2;
+}
+
+.schedule-table td .course-color-indicator {
+  width: var(--spacing-unit); /* 8px */
+  height: calc(var(--spacing-unit) * 2); /* 16px */
+  border-radius: var(--border-radius-sm);
+  flex-shrink: 0;
+}
+
+.schedule-table td .course-name {
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+/* Theme Overrides (Update to match fixed heights) */
 .theme-default thead th {
-  color: var(--color-primary); /* Header text primary color */
+  color: var(--color-primary);
   border-bottom-color: var(--color-primary-light);
 }
+
 .theme-default td.day-col {
   color: var(--color-primary);
-  background-color: #f5f5ff; /* Very light primary tint */
+  background-color: #f5f5ff;
   border-right-color: var(--color-primary-light);
 }
+
 .theme-default tbody tr:hover td:not(.day-col) {
-  background-color: #f0f0ff; /* Light primary hover */
+  background-color: #f0f0ff;
 }
 
-/* --- Ocean Breeze Theme (theme-blue) --- */
 .theme-blue thead th {
   background-color: #3978f1;
   color: var(--color-text-on-primary);
   border-bottom-color: #2962ff;
 }
+
 .theme-blue td.day-col {
   background-color: #ebf2ff;
   color: #2a5fde;
   border-right-color: #a8c5ff;
 }
+
 .theme-blue tbody tr:hover td:not(.day-col) {
   background-color: #dce8ff;
 }
+
 .theme-blue td {
   border-color: #dce8ff;
-} /* Consistent border color */
+}
 
-/* --- Mint Fresh Theme (theme-green) --- */
 .theme-green thead th {
   background-color: #1fab89;
   color: var(--color-text-on-primary);
   border-bottom-color: #17806d;
 }
+
 .theme-green td.day-col {
   background-color: #e3fdf6;
   color: #13705a;
   border-right-color: #97e5d1;
 }
+
 .theme-green tbody tr:hover td:not(.day-col) {
   background-color: #d0f9ee;
 }
+
 .theme-green td {
   border-color: #d0f9ee;
 }
 
-/* --- Midnight Theme (theme-dark) --- */
-.theme-dark {
-  background-color: #2c2f3e;
-  color: var(--color-text-on-dark);
-}
 .theme-dark thead th {
-  background-color: #3a3e52;
-  color: #b0b3c3;
-  border-bottom-color: var(--color-primary);
+  background-color: #343a40;
+  color: #e0e0e0;
+  border-bottom: 2px solid var(--color-primary);
 }
+
 .theme-dark td.day-col {
-  background-color: #3a3e52;
-  color: #969bb0;
-  border-right-color: #4b5066;
+  background-color: #343a40;
+  color: #adb5bd;
+  border-right-color: #495057;
 }
+
 .theme-dark tbody tr td {
-  background-color: #2c2f3e;
-  border-color: #4b5066;
-}
-.theme-dark tbody tr:hover td:not(.day-col) {
-  background-color: #40445a;
+  background-color: #2c3034;
+  color: #f8f9fa;
+  border-bottom-color: #495057;
 }
 
-.theme-dark th { 
-    background-color: #343a40; /* Darker header background */
-    color: #e0e0e0; /* Light gray for header text */
-    border-bottom: 2px solid var(--color-primary); /* Keep primary accent, or change to a lighter one */
-    /* border-bottom-color: #52575c; */ /* Alternative darker border for header */
-}
-.theme-dark td.day-col { 
-    background-color: #343a40; /* Same as header for consistency */
-    color: #adb5bd;     /* Medium light gray for day names */
-    border-right-color: #495057; /* Darker border */
-}
-.theme-dark tbody tr td { /* TARGET ALL TDs in tbody for this theme */
-    background-color: #2c3034; /* Main dark cell background */
-    color: #f8f9fa;            /* <<< KEY CHANGE: Light text for cells */
-    border-bottom-color: #495057; /* Darker horizontal borders */
-}
-/* Ensure the right border for non-day-column cells also uses the dark theme's border color */
 .theme-dark tbody tr td:not(.day-col):not(:last-child) {
-    border-right-color: #495057;
-}
-.theme-dark tbody tr:hover td:not(.day-col) { 
-    background-color: #424852; /* Slightly lighter dark for hover */
-    color: #ffffff;            /* Ensure hover text is also light */
-}
-/* Ensure the last cell in a row doesn't have a right border if others do */
-.theme-dark tbody tr td:last-child {
-    border-right: none;
+  border-right-color: #495057;
 }
 
-/* --- Sunset Theme (theme-peach) --- */
+.theme-dark tbody tr:hover td:not(.day-col) {
+  background-color: #424852;
+  color: #ffffff;
+}
+
 .theme-peach thead th {
   background-color: #ff8c42;
   color: #50240e;
   border-bottom-color: #f0782d;
 }
+
 .theme-peach td.day-col {
   background-color: #fff0e6;
   color: #d9641e;
   border-right-color: #ffc5a1;
 }
+
 .theme-peach tbody tr:hover td:not(.day-col) {
   background-color: #ffe5d1;
 }
+
 .theme-peach td {
   border-color: #ffe5d1;
 }
 
-/* --- Professional Theme (theme-professional) --- */
 .theme-professional thead th {
   background-color: #6c757d;
   color: var(--color-text-on-primary);
   border-bottom-color: #495057;
 }
+
 .theme-professional td.day-col {
   background-color: #e9ecef;
   color: #343a40;
   font-weight: 500;
   border-right-color: #ced4da;
 }
+
 .theme-professional tbody tr:hover td:not(.day-col) {
   background-color: #f8f9fa;
 }
+
 .theme-professional td {
   border-color: #dee2e6;
 }
@@ -679,45 +700,13 @@ body {
   height: 1em;
 }
 
-/* Input Grid Cell with Course Name and Color Picker */
+/* Input Grid Cell - Now only text input */
 .grid-cell-content {
-  /* Wrapper for text input and color input */
   display: flex;
   align-items: center;
-  /* gap: var(--spacing-unit); */
 }
 .grid-cell-content input[type="text"] {
-  flex-grow: 1; /* Text input takes most space */
-}
-.grid-cell-content input[type="color"] {
-  -webkit-appearance: none; /* Remove default styling on WebKit */
-  -moz-appearance: none;
-  appearance: none;
-  width: calc(var(--spacing-unit) * 3.5); /* 28px */
-  height: calc(var(--spacing-unit) * 3.5);
-  padding: 0; /* Remove default padding */
-  border: 1px solid var(--color-border-medium);
-  border-radius: var(--border-radius-sm);
-  cursor: pointer;
-  background-color: transparent; /* Ensure native color picker shows through */
-  transition: var(--transition-fast);
-}
-.grid-cell-content input[type="color"]:hover {
-  border-color: var(--color-primary);
-}
-.grid-cell-content input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 0;
-}
-.grid-cell-content input[type="color"]::-webkit-color-swatch {
-  border: none;
-  border-radius: calc(
-    var(--border-radius-sm) - 1px
-  ); /* Inner radius for swatch */
-}
-.grid-cell-content input[type="color"]::-moz-color-swatch {
-  /* Firefox */
-  border: none;
-  border-radius: calc(var(--border-radius-sm) - 1px);
+  flex-grow: 1;
 }
 
 /* Output Table Cell with Color Indicator */
@@ -737,139 +726,150 @@ body {
   word-break: break-word; /* Allow long course names to wrap */
 }
 
-
-
-
 /* Global Course Management Section */
 #global-courses-section .global-course-form {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-unit);
-    margin-bottom: calc(var(--spacing-unit) * 2);
-    flex-wrap: wrap; /* Allow wrapping */
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-unit);
+  margin-bottom: calc(var(--spacing-unit) * 2);
+  flex-wrap: wrap; /* Allow wrapping */
 }
-#global-courses-section .text-input { /* General text input style for reuse */
-    padding: calc(var(--spacing-unit) * 1.25);
-    border: 1px solid var(--color-border-medium);
-    border-radius: var(--border-radius-sm);
-    font-size: 0.95rem;
-    font-family: var(--font-family-main);
-    flex-grow: 1; /* Take available space */
-    min-width: 150px; /* Prevent being too small */
+#global-courses-section .text-input {
+  /* General text input style for reuse */
+  padding: calc(var(--spacing-unit) * 1.25);
+  border: 1px solid var(--color-border-medium);
+  border-radius: var(--border-radius-sm);
+  font-size: 0.95rem;
+  font-family: var(--font-family-main);
+  flex-grow: 1; /* Take available space */
+  min-width: 150px; /* Prevent being too small */
 }
 #global-courses-section .text-input:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: var(--shadow-focus);
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-focus);
 }
-#global-courses-section input[type="color"] { /* Style for the global color picker */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    width: calc(var(--spacing-unit) * 4); /* 32px */
-    height: calc(var(--spacing-unit) * 4);
-    padding: 0;
-    border: 1px solid var(--color-border-medium);
-    border-radius: var(--border-radius-sm);
-    cursor: pointer;
-    background-color: transparent;
+#global-courses-section input[type="color"] {
+  /* Style for the global color picker */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: calc(var(--spacing-unit) * 4); /* 32px */
+  height: calc(var(--spacing-unit) * 4);
+  padding: 0;
+  border: 1px solid var(--color-border-medium);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  background-color: transparent;
 }
-#global-courses-section input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-#global-courses-section input[type="color"]::-webkit-color-swatch { border: none; border-radius: calc(var(--border-radius-sm) - 1px); }
-#global-courses-section input[type="color"]::-moz-color-swatch { border: none; border-radius: calc(var(--border-radius-sm) - 1px); }
-
+#global-courses-section input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+#global-courses-section input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: calc(var(--border-radius-sm) - 1px);
+}
+#global-courses-section input[type="color"]::-moz-color-swatch {
+  border: none;
+  border-radius: calc(var(--border-radius-sm) - 1px);
+}
 
 #global-course-list-container {
-    margin-top: calc(var(--spacing-unit) * 2);
+  margin-top: calc(var(--spacing-unit) * 2);
 }
 #global-course-list-container h3 {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: var(--color-text-muted);
-    margin-bottom: var(--spacing-unit);
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-unit);
 }
 #global-course-list-ul {
-    list-style: none;
-    padding: 0;
-    max-height: 200px; /* Scrollable if too many */
-    overflow-y: auto;
-    border: 1px solid var(--color-border-light);
-    border-radius: var(--border-radius-sm);
-    padding: var(--spacing-unit);
+  list-style: none;
+  padding: 0;
+  max-height: 200px; /* Scrollable if too many */
+  overflow-y: auto;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-unit);
 }
 #global-course-list-ul li {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: calc(var(--spacing-unit) * 0.75) var(--spacing-unit);
-    border-bottom: 1px solid var(--color-border-light);
-    font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--spacing-unit) * 0.75) var(--spacing-unit);
+  border-bottom: 1px solid var(--color-border-light);
+  font-size: 0.95rem;
 }
 #global-course-list-ul li:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 .global-course-item-info {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-unit);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-unit);
 }
 .global-course-item-color-swatch {
-    width: var(--spacing-unit) * 1.5;
-    height: var(--spacing-unit) * 1.5;
-    border-radius: 3px;
-    border: 1px solid rgba(0,0,0,0.1);
-    flex-shrink: 0;
+  width: var(--spacing-unit) * 1.5;
+  height: var(--spacing-unit) * 1.5;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 .remove-global-course-button {
-    background: none;
-    border: none;
-    color: var(--color-danger);
-    cursor: pointer;
-    padding: calc(var(--spacing-unit) * 0.5);
-    font-size: 1.1rem; /* Make X bigger */
-    line-height: 1;
+  background: none;
+  border: none;
+  color: var(--color-danger);
+  cursor: pointer;
+  padding: calc(var(--spacing-unit) * 0.5);
+  font-size: 1.1rem; /* Make X bigger */
+  line-height: 1;
 }
 .remove-global-course-button:hover {
-    color: #a71d2a; /* Darker danger */
+  color: #a71d2a; /* Darker danger */
 }
 
-
-/* Autocomplete Suggestions */
+/* Autocomplete Suggestions - ENHANCED */
 .autocomplete-suggestions-container {
-    position: absolute; /* Positioned relative to the input's offsetParent */
-    border: 1px solid var(--color-border-medium);
-    border-top: none; /* Avoid double border with input */
-    background-color: var(--color-surface);
-    box-shadow: var(--shadow-medium);
-    border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm); /* Rounded bottom corners */
-    z-index: 1000; /* Above other content */
-    max-height: 200px;
-    overflow-y: auto;
-    display: none; /* Hidden by default */
+  position: absolute;
+  border: 1px solid var(--color-border-medium);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--border-radius-md);
+  z-index: 1000;
+  max-height: 250px;
+  overflow-y: auto;
+  display: none;
+  margin-top: 4px;
 }
 .autocomplete-suggestion-item {
-    padding: calc(var(--spacing-unit) * 1.25) calc(var(--spacing-unit) * 1.5);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-unit);
-    font-size: 0.95rem;
+  padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing-unit) * 1.5);
+  font-size: 0.95rem;
+  border-bottom: 1px solid var(--color-border-light);
+  transition: background-color var(--transition-fast);
+}
+.autocomplete-suggestion-item:last-child {
+  border-bottom: none;
 }
 .autocomplete-suggestion-item:hover,
-.autocomplete-suggestion-item.active { /* For keyboard navigation */
-    background-color: var(--color-primary-light);
-    color: var(--color-primary-dark);
+.autocomplete-suggestion-item.active {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
+.autocomplete-suggestion-item.active {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
 }
 .autocomplete-suggestion-item .suggestion-color-swatch {
-    width: var(--spacing-unit) * 1.5;
-    height: var(--spacing-unit) * 1.5;
-    border-radius: 3px;
-    border: 1px solid rgba(0,0,0,0.1);
-    flex-shrink: 0;
+  width: calc(var(--spacing-unit) * 2);
+  height: calc(var(--spacing-unit) * 2);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
-
-/* Ensure input grid wrapper allows absolute positioning of suggestions */
-#input-section .card-content-wrapper, /* If you have a wrapper around grid */
-#course-input-grid-wrapper {
-    position: relative; /* Needed for absolute positioning of suggestions */
+.autocomplete-suggestion-item {
+  touch-action: manipulation; /* Improve touch interaction */
 }

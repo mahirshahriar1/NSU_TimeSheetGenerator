@@ -1,86 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Weekly Course Scheduler</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-</head>
-<body>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+      integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+  </head>
+  <body>
     <div class="app-container">
-        <header class="app-header">
-            <h1>Weekly Scheduler</h1>
-            <p class="subtitle">Plan your week with ease. Enter courses and generate your schedule.</p>
-        </header>
+      <header class="app-header">
+        <h1>Weekly Scheduler</h1>
+        <p class="subtitle">
+          Plan your week with ease. Enter courses and generate your schedule.
+        </p>
+      </header>
 
-        <main class="app-main">
-            <!-- Section for Managing Global Course Codes -->
-            <section id="global-courses-section" class="card">
-                <h2 class="card-title">Manage Course Codes</h2>
-                <div class="global-course-form">
-                    <input type="text" id="global-course-name-input" placeholder="Course Code (e.g., CSE373)" class="text-input">
-                    <input type="color" id="global-course-color-input" value="#A0E7E5" title="Default course color">
-                    <button id="add-global-course-button" class="button button-primary button-small">Add Course</button>
-                </div>
-                <div id="global-course-list-container">
-                    <h3>Saved Courses:</h3>
-                    <ul id="global-course-list-ul">
-                        <!-- Global courses will be listed here -->
-                    </ul>
-                </div>
-            </section>
+      <main class="app-main">
+        <!-- Section for Managing Global Course Codes -->
+        <section id="global-courses-section" class="card">
+          <h2 class="card-title">Manage Course Codes</h2>
+          <div class="global-course-form">
+            <input
+              type="text"
+              id="global-course-name-input"
+              placeholder="Course Code (e.g., CSE373)"
+              class="text-input"
+            />
+            <input
+              type="color"
+              id="global-course-color-input"
+              value="#A0E7E5"
+              title="Default course color"
+            />
+            <button
+              id="add-global-course-button"
+              class="button button-primary button-small"
+            >
+              Add Course
+            </button>
+          </div>
+          <div id="global-course-list-container">
+            <h3>Saved Courses:</h3>
+            <ul id="global-course-list-ul">
+              <!-- Global courses will be listed here -->
+            </ul>
+          </div>
+        </section>
 
-            <section id="input-section" class="card">
-                <div class="card-header-controls">
-                    <h2 class="card-title">Enter Your Schedule</h2>
-                    <button id="clear-all-button" class="button button-danger button-small">Clear All</button>
-                </div>
-                <div id="course-input-grid-wrapper">
-                    <div id="course-input-grid">
-                        <!-- Input fields and color pickers will be generated here -->
-                    </div>
-                </div>
-                 <!-- Autocomplete suggestions container -->
-                <div id="autocomplete-suggestions" class="autocomplete-suggestions-container"></div>
-                <button id="generate-button" class="button button-primary">Generate Schedule</button>
-            </section>
+        <section id="input-section" class="card">
+          <div class="card-header-controls">
+            <h2 class="card-title">Enter Your Schedule</h2>
+            <button
+              id="clear-all-button"
+              class="button button-danger button-small"
+            >
+              Clear All
+            </button>
+          </div>
+          <div id="course-input-grid-wrapper">
+            <div id="course-input-grid">
+              <!-- Input fields and color pickers will be generated here -->
+            </div>
+            <!-- Autocomplete suggestions container, MOVED INSIDE WRAPPER for better positioning context -->
+            <div
+              id="autocomplete-suggestions"
+              class="autocomplete-suggestions-container"
+            ></div>
+          </div>
+          <button id="generate-button" class="button button-primary">
+            Generate Schedule
+          </button>
+        </section>
 
-            <section id="output-section" style="display:none;">
-                <!-- ... (schedule controls and table container same as before) ... -->
-                <div id="schedule-controls" class="card">
-                     <h2 class="card-title">Schedule Options</h2>
-                    <div class="controls-flex">
-                        <div class="control-group">
-                            <label for="template-select">Theme:</label>
-                            <select id="template-select" class="select-input">
-                                <option value="theme-default">Default</option>
-                                <option value="theme-blue">Ocean Breeze</option>
-                                <option value="theme-green">Mint Fresh</option>
-                                <option value="theme-dark">Midnight</option>
-                                <option value="theme-peach">Sunset</option>
-                                <option value="theme-professional">Professional</option>
-                            </select>
-                        </div>
-                        <button id="save-image-button" class="button button-secondary">Save as Image</button>
-                    </div>
-                </div>
-                <div id="class-schedule-container" class="card schedule-table-wrapper">
-                    <h2 class="card-title">Your Class Schedule</h2>
-                    <div class="table-responsive">
-                        <table id="class-schedule-table" class="schedule-table theme-default"></table>
-                    </div>
-                </div>
-            </section>
-        </main>
+        <section id="output-section" style="display: none">
+          <div id="schedule-controls" class="card">
+            <h2 class="card-title">Schedule Options</h2>
+            <div class="controls-flex">
+              <div class="control-group">
+                <label for="template-select">Theme:</label>
+                <select id="template-select" class="select-input">
+                  <option value="theme-default">Default</option>
+                  <option value="theme-blue">Ocean Breeze</option>
+                  <option value="theme-green">Mint Fresh</option>
+                  <option value="theme-dark">Midnight</option>
+                  <option value="theme-peach">Sunset</option>
+                  <option value="theme-professional">Professional</option>
+                </select>
+              </div>
+              <button id="save-image-button" class="button button-secondary">
+                Save as Image
+              </button>
+            </div>
+          </div>
+          <div
+            id="class-schedule-container"
+            class="card schedule-table-wrapper"
+          >
+            <h2 class="card-title">Your Class Schedule</h2>
+            <div class="table-responsive">
+              <table
+                id="class-schedule-table"
+                class="schedule-table theme-default"
+              ></table>
+            </div>
+          </div>
+        </section>
+      </main>
 
-        <footer class="app-footer">
-            <p>© <span id="current-year"></span> Scheduler App. Crafted with care.</p>
-        </footer>
+      <footer class="app-footer">
+        <p>
+          © <span id="current-year"></span> Scheduler App. Crafted with care.
+        </p>
+      </footer>
     </div>
 
-    <script src="script.js"></script></body>
+    <script src="script.js"></script>
+  </body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
 </html>
